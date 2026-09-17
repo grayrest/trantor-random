@@ -1,0 +1,101 @@
+app [run!] { pf: platform "@PLATFORM@" }
+
+import pf.Host
+import Rng
+import FastRng
+import RngDraw
+import UuidV7
+
+## The D-S4-12 gate. The host's input is always "string from host" (16 bytes),
+## so every count is derived from its length to keep the work out of reach of
+## compile-time evaluation. `@BODY@` and `@SCALE@` are substituted by run.py.
+run! : Str => Str
+run! = |input| {
+	bytes = Str.count_utf8_bytes(input)
+	count = bytes * @SCALE@
+	@BODY@
+}
+
+alloc_report! : U64, U64 => Str
+alloc_report! = |bytes, count| {
+	rng = Rng.from_u64(bytes)
+	fast = FastRng.from_u64(bytes)
+
+	rng_before = Host.alloc_count!()
+	rng_total = rng_sum(rng, count, 0)
+	rng_allocs = Host.alloc_count!() - rng_before
+
+	fast_before = Host.alloc_count!()
+	fast_total = fast_sum(fast, count, 0)
+	fast_allocs = Host.alloc_count!() - fast_before
+
+	rng_for_below = Rng.from_u64(bytes)
+	fast_for_below = FastRng.from_u64(bytes)
+
+	rng_below_before = Host.alloc_count!()
+	rng_below_total = rng_below_sum(rng_for_below, count, 0)
+	rng_below_allocs = Host.alloc_count!() - rng_below_before
+
+	fast_below_before = Host.alloc_count!()
+	fast_below_total = fast_below_sum(fast_for_below, count, 0)
+	fast_below_allocs = Host.alloc_count!() - fast_below_before
+
+	stream = UuidV7.new(Rng.from_u64(bytes))
+	uuid_before = Host.alloc_count!()
+	uuid_total = uuid_sum(stream, count // 2, bytes, 0)
+	uuid_allocs = Host.alloc_count!() - uuid_before
+
+	Str.join_with([
+		"draws: ${count.to_str()}",
+		"Rng.next_u64 allocations: ${rng_allocs.to_str()} (sum ${rng_total.to_str()})",
+		"FastRng.next_u64 allocations: ${fast_allocs.to_str()} (sum ${fast_total.to_str()})",
+		"RngDraw.below on Rng allocations: ${rng_below_allocs.to_str()} (sum ${rng_below_total.to_str()})",
+		"RngDraw.below on FastRng allocations: ${fast_below_allocs.to_str()} (sum ${fast_below_total.to_str()})",
+		"UuidV7(Rng).next allocations over ${(count // 2).to_str()} UUIDs: ${uuid_allocs.to_str()} (sum ${uuid_total.to_str()})",
+	], "; ")
+}
+
+rng_below_sum : Rng, U64, U64 -> U64
+rng_below_sum = |rng, remaining, acc|
+	if remaining == 0 {
+		acc
+	} else {
+		(value, next) = RngDraw.below(rng, 1000)
+		rng_below_sum(next, remaining - 1, acc.plus_wrap(value))
+	}
+
+fast_below_sum : FastRng, U64, U64 -> U64
+fast_below_sum = |rng, remaining, acc|
+	if remaining == 0 {
+		acc
+	} else {
+		(value, next) = RngDraw.below(rng, 1000)
+		fast_below_sum(next, remaining - 1, acc.plus_wrap(value))
+	}
+
+uuid_sum : UuidV7(Rng), U64, U64, U64 -> U64
+uuid_sum = |stream, remaining, now, acc|
+	if remaining == 0 {
+		acc
+	} else {
+		(id, next) = stream.next(now + remaining // 3)
+		uuid_sum(next, remaining - 1, now, acc.plus_wrap(id.version().to_u64()))
+	}
+
+rng_sum : Rng, U64, U64 -> U64
+rng_sum = |rng, remaining, acc|
+	if remaining == 0 {
+		acc
+	} else {
+		(word, next) = rng.next_u64()
+		rng_sum(next, remaining - 1, acc.plus_wrap(word))
+	}
+
+fast_sum : FastRng, U64, U64 -> U64
+fast_sum = |rng, remaining, acc|
+	if remaining == 0 {
+		acc
+	} else {
+		(word, next) = rng.next_u64()
+		fast_sum(next, remaining - 1, acc.plus_wrap(word))
+	}

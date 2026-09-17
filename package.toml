@@ -1,0 +1,32 @@
+# trantor-random — seeded random number generators, draws and UUIDs, in pure Roc.
+#
+# An ADD-ON over the trantor-cli baseline, which it depends on for one thing:
+# `Random.seed_u64!`, the OS entropy that `from_os!` seeds a generator with
+# (trantor D-S4-1). Everything after seeding is pure. A consumer names both:
+#
+#   [deps]
+#   trantor-cli = { path = "../trantor-cli" }
+#   trantor-random = { path = "../trantor-random" }
+#
+# bench/alloc is the allocation and speed gate (D-S4-12). It runs outside
+# `trantor test`, on the roc repo's alloc-count platform: see its run.py.
+[package]
+name = "trantor-random"
+version = "0.1.0"
+exports = ["Rng", "FastRng", "RngDraw", "Weights", "Uuid", "UuidV7"]
+
+[deps]
+trantor-cli = { path = "../trantor-cli" }
+
+# Exported by the component and kept out of the package's exports:
+# - `ChaCha8` and `SplitMix64` are implementation the generators import.
+# - `RngVectors` is generated test data (tests/vectors).
+# - `RngDrawCheck` checks every draw against it through each generator.
+# - `RngStable` holds the hand-copied outputs the 1.x promise rests on.
+[components.random]
+kind = "roc"
+exports = ["Rng", "FastRng", "RngDraw", "Weights", "Uuid", "UuidV7", "ChaCha8", "SplitMix64", "RngVectors", "RngDrawCheck", "RngStable"]
+
+# What `trantor test .` composes this add-on against.
+[dev-deps]
+trantor-cli = { path = "../trantor-cli" }

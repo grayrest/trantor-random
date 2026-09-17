@@ -1,0 +1,15 @@
+# Reference vectors for trantor-random. `cargo run` regenerates
+# components/random/RngVectors.roc; `cargo run -- --regen-go` first reruns the
+# Go program in go/ and rewrites go/golden.txt. `cargo test` (run by
+# `trantor test .`) fails if the committed file differs, and needs no Go.
+[package]
+name = "trantor-random-vectors"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rand_xoshiro = "=0.8.1"
+uuid = { version = "=1.26.0", default-features = false, features = ["std"] }
+
+[workspace]

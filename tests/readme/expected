@@ -1,0 +1,10 @@
+two dice in range: True
+a hundred rolls: True
+same seed, same draw: True
+fork gives two streams: True
+resumed where it left off: True
+shuffle and sample: True
+a drop: True
+v4 version: 4, parses back: True
+v7 in order: True
+a custom generator draws: 0
