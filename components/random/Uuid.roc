@@ -50,8 +50,14 @@ Uuid :: { hi : U64, lo : U64 }.{
 
 	## The layout both v7 forms share: 48-bit time, version 7, 12 bits of
 	## `rand_a`, the variant, then the top 62 bits of `b`.
+	##
+	## An app can bring its own time and counter here, so each argument is
+	## trimmed to its field rather than refused: `unix_ms` keeps its low 48
+	## bits and `rand_a` its low 12, the same trimming `v7` does. An unmasked
+	## `rand_a` would spill into the version nibble beside it, and the result
+	## would not be a v7 at all.
 	from_parts : U64, U64, U64 -> Uuid
-	from_parts = |unix_ms, rand_a, b| Uuid.{ hi: unix_ms.shl_wrap(16).bitwise_or(0x7000).bitwise_or(rand_a), lo: with_variant(b.shr_zf_wrap(2)) }
+	from_parts = |unix_ms, rand_a, b| Uuid.{ hi: unix_ms.bitwise_and(time_mask).shl_wrap(16).bitwise_or(0x7000).bitwise_or(rand_a.bitwise_and(rand_a_mask)), lo: with_variant(b.shr_zf_wrap(2)) }
 
 	## The version number in the UUID's version field (4 for `v4`, 7 for `v7`).
 	version : Uuid -> U8
@@ -134,6 +140,7 @@ Uuid :: { hi : U64, lo : U64 }.{
 	is_gte : Uuid, Uuid -> Bool
 	is_gte = |a, b| !is_lt(a, b)
 
+	to_hash : Uuid, Hasher -> Hasher
 	to_hash = |uuid, hasher| uuid.lo.to_hash(uuid.hi.to_hash(hasher))
 
 	## Encodes as the string form, through any format.
@@ -171,6 +178,9 @@ Uuid :: { hi : U64, lo : U64 }.{
 
 	time_mask : U64
 	time_mask = 0xffffffffffff
+
+	rand_a_mask : U64
+	rand_a_mask = 0xfff
 
 	text_len : U64
 	text_len = 36
@@ -316,6 +326,14 @@ expect
 			}
 		}
 	})
+
+# `from_parts` is reachable from an app with a time and counter of its own, so
+# each argument has to stay inside its field: 12 bits of `rand_a` next to the
+# version, 48 of time next to that.
+expect {
+	masked = Uuid.from_parts(0x1000000000005, 0xffff, 0)
+	masked.version() == 7 and masked == Uuid.from_parts(5, 0xfff, 0)
+}
 
 # A record holding a Uuid goes through JSON as the string form, both ways.
 expect {
