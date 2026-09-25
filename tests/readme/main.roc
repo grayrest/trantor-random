@@ -35,7 +35,7 @@ roll_many = |start, count| {
 
 Loot : [Common, Rare, Legendary]
 
-loot_table : () -> Try(Weights(Loot), [ListWasEmpty, AllZero, TotalOverflow, ..])
+loot_table : () -> Try(Weights(Loot), [ListWasEmpty, AllZero, TotalOverflow])
 loot_table = || Weights.from_list([(Common, 70), (Rare, 25), (Legendary, 5)])
 
 ## A generator of your own: a counter, which every RngDraw function accepts.

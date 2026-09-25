@@ -167,7 +167,7 @@ RngDraw :: [].{
 		}
 
 	## One item of `list`, each equally likely. An empty list draws nothing.
-	choose : r, List(a) -> (Try(a, [ListWasEmpty, ..]), r) where [r.next_u64 : r -> (U64, r)]
+	choose : r, List(a) -> (Try(a, [ListWasEmpty]), r) where [r.next_u64 : r -> (U64, r)]
 	choose = |rng, list|
 		if list.is_empty() {
 			(Err(ListWasEmpty), rng)

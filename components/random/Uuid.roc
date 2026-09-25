@@ -79,7 +79,7 @@ Uuid :: { hi : U64, lo : U64 }.{
 
 	## Parses the `8-4-4-4-12` form, in either case. Braces, a `urn:uuid:`
 	## prefix and the unhyphenated form are refused.
-	from_str : Str -> Try(Uuid, [InvalidUuid, ..])
+	from_str : Str -> Try(Uuid, [InvalidUuid])
 	from_str = |text| {
 		chars = Str.to_utf8(text)
 		if chars.len() != text_len {
@@ -117,7 +117,7 @@ Uuid :: { hi : U64, lo : U64 }.{
 	to_bytes = |uuid| be_bytes(uuid.hi).concat(be_bytes(uuid.lo))
 
 	## The UUID from 16 bytes in RFC order.
-	from_bytes : List(U8) -> Try(Uuid, [InvalidUuid, ..])
+	from_bytes : List(U8) -> Try(Uuid, [InvalidUuid])
 	from_bytes = |data|
 		if data.len() != 16 {
 			Err(InvalidUuid)

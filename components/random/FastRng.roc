@@ -17,7 +17,7 @@ import RngVectors
 FastRng :: { s0 : U64, s1 : U64, s2 : U64, s3 : U64 }.{
 
 	## A generator seeded with 256 bits from the operating system.
-	from_os! : () => Try(FastRng, [RandomErr(IOErr), ..])
+	from_os! : () => Try(FastRng, [RandomErr(IOErr)])
 	from_os! = || {
 		w0 = Random.seed_u64!()?
 		w1 = Random.seed_u64!()?
@@ -28,7 +28,7 @@ FastRng :: { s0 : U64, s1 : U64, s2 : U64, s3 : U64 }.{
 
 	## A generator whose state is exactly these four words. xoshiro cannot
 	## leave the all-zero state, so that one is refused.
-	from_words : { w0 : U64, w1 : U64, w2 : U64, w3 : U64 } -> Try(FastRng, [AllZero, ..])
+	from_words : { w0 : U64, w1 : U64, w2 : U64, w3 : U64 } -> Try(FastRng, [AllZero])
 	from_words = |{ w0, w1, w2, w3 }|
 		if w0 == 0 and w1 == 0 and w2 == 0 and w3 == 0 {
 			Err(AllZero)
@@ -107,7 +107,7 @@ FastRng :: { s0 : U64, s1 : U64, s2 : U64, s3 : U64 }.{
 	shuffle = |rng, list| RngDraw.shuffle(rng, list)
 
 	## One item of `list`, each equally likely.
-	choose : FastRng, List(a) -> (Try(a, [ListWasEmpty, ..]), FastRng)
+	choose : FastRng, List(a) -> (Try(a, [ListWasEmpty]), FastRng)
 	choose = |rng, list| RngDraw.choose(rng, list)
 
 	## `k` different items of `list`, in the order drawn.
@@ -134,7 +134,7 @@ FastRng :: { s0 : U64, s1 : U64, s2 : U64, s3 : U64 }.{
 
 	## The generator `to_bytes` saved. Anything but 32 bytes, or the all-zero
 	## state no generator reaches, is refused.
-	from_bytes : List(U8) -> Try(FastRng, [InvalidState, ..])
+	from_bytes : List(U8) -> Try(FastRng, [InvalidState])
 	from_bytes = |data|
 		if data.len() != 32 {
 			Err(InvalidState)

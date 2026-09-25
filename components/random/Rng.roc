@@ -27,7 +27,7 @@ Rng :: { seed : Seed, buf : List(U64), i : U64, n : U64, c : U32 }.{
 	Seed : { w0 : U64, w1 : U64, w2 : U64, w3 : U64 }
 
 	## A generator seeded with 256 bits from the operating system.
-	from_os! : () => Try(Rng, [RandomErr(IOErr), ..])
+	from_os! : () => Try(Rng, [RandomErr(IOErr)])
 	from_os! = || {
 		w0 = Random.seed_u64!()?
 		w1 = Random.seed_u64!()?
@@ -105,7 +105,7 @@ Rng :: { seed : Seed, buf : List(U64), i : U64, n : U64, c : U32 }.{
 	shuffle = |rng, list| RngDraw.shuffle(rng, list)
 
 	## One item of `list`, each equally likely.
-	choose : Rng, List(a) -> (Try(a, [ListWasEmpty, ..]), Rng)
+	choose : Rng, List(a) -> (Try(a, [ListWasEmpty]), Rng)
 	choose = |rng, list| RngDraw.choose(rng, list)
 
 	## `k` different items of `list`, in the order drawn.
@@ -142,7 +142,7 @@ Rng :: { seed : Seed, buf : List(U64), i : U64, n : U64, c : U32 }.{
 	}
 
 	## The generator `to_bytes` saved.
-	from_bytes : List(U8) -> Try(Rng, [InvalidState, ..])
+	from_bytes : List(U8) -> Try(Rng, [InvalidState])
 	from_bytes = |data| {
 		# 48 bytes: the tag, the words used since the last reseed (big-endian),
 		# then the seed (little-endian). A count past 124 is never written.

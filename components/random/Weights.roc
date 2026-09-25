@@ -11,7 +11,7 @@
 Weights(a) :: { items : List(a), cumulative : List(U64), total : U64 }.{
 
 	## The table for `entries`. An entry with weight 0 is never picked.
-	from_list : List((a, U64)) -> Try(Weights(a), [ListWasEmpty, AllZero, TotalOverflow, ..])
+	from_list : List((a, U64)) -> Try(Weights(a), [ListWasEmpty, AllZero, TotalOverflow])
 	from_list = |entries|
 		if entries.is_empty() {
 			Err(ListWasEmpty)

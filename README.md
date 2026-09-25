@@ -76,7 +76,7 @@ them as functions that take any value with
 ```roc
 Loot : [Common, Rare, Legendary]
 
-loot_table : () -> Try(Weights(Loot), [ListWasEmpty, AllZero, TotalOverflow, ..])
+loot_table : () -> Try(Weights(Loot), [ListWasEmpty, AllZero, TotalOverflow])
 loot_table = || Weights.from_list([(Common, 70), (Rare, 25), (Legendary, 5)])
 ```
 
