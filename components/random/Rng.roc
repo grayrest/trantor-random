@@ -1,4 +1,4 @@
-import IOErr exposing [IOErr]
+import IOErr
 import Random
 import ChaCha8
 import SplitMix64

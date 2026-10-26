@@ -1,4 +1,4 @@
-import IOErr exposing [IOErr]
+import IOErr
 
 ## Stands in for trantor-cli's `Random` so the generators build on the roc
 ## repo's alloc-count platform. Never called by the gate.

@@ -1,4 +1,4 @@
-import IOErr exposing [IOErr]
+import IOErr
 import Random
 import SplitMix64
 import RngDraw
